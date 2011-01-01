@@ -11,7 +11,7 @@ method (for me) to access my web passwords remotely.
 
 Gems required: sqlite3, cgi, optparse, ostruct
 
-Copyright (C) 2011 Alan P. Laudicina <contact@laudicina.net>
+Copyright (C) 2011 Alan P. Laudicina <contact@alanp.ca>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

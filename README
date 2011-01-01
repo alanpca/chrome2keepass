@@ -28,4 +28,4 @@ WARNING: This will dump your passwords to your screen, plaintext.  Don't
 run this when there are prying eyes around. The output is meant to be redirected
 to a file that you can import into Keepassx.
 
-Copyright (C) 2011 Alan P. Laudicina <contact@laudicina.net>
+Copyright (C) 2011 Alan P. Laudicina <contact@alanp.ca>
