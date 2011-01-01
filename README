@@ -1,0 +1,31 @@
+chrome2keepass will take a Chrome password database and convert it to proper
+XML format importation into Keepass (http://keepass.info/download.html).
+
+If you're like me, then you sometimes want to access sites from a remote
+computer, but have a massive amount of different passwords that are
+site-specific.  By combining Keepass with Dropbox, I have found the best
+method (for me) to access my web passwords remotely.
+
+The standard output is meant to be redirected to a file that you can import
+into Keepass.
+
+The following gems are required:
+ * sqlite3-ruby
+ * cgi
+ * optparse
+ * ostruct
+
+Usage: chrome2keepass [options]
+
+    -p, --profile [PROFILE]          Name of Chrome Profile
+                                     Default: 'Default'
+    -l, --location [LOCATION]        Location to chrome config
+                                     Default: '$HOME/.config/chromium'
+    -f, --filename [FILENAME]        Filename to use instead of STDOUT
+    -h, --help                       Show this help
+
+WARNING: This will dump your passwords to your screen, plaintext.  Don't
+run this when there are prying eyes around. The output is meant to be redirected
+to a file that you can import into Keepassx.
+
+Copyright (C) 2011 Alan P. Laudicina <contact@laudicina.net>
