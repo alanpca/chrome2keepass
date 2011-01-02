@@ -33,17 +33,7 @@ require 'optparse'
 require 'ostruct'
 require 'sqlite3'
 require 'cgi'
-
-def put_top
-  puts "<!DOCTYPE KEEPASSX_DATABASE>"
-  puts "<database>\n"
-  puts "<group><title>Chrome Import " + Time.new.strftime('%Y%m%d-%H%M%S') + "</title>"
-  puts "<icon>1</icon>"
-end
-
-def put_bottom
-  puts "</group>\n</database>\n"
-end
+require 'builder'
 
 def get_title(entry)
   # This is here for future support of renaming
@@ -51,7 +41,7 @@ def get_title(entry)
 end
 
 # Put the entry to $stdout based on the Keepass XML formatting
-def put_entry(entry)
+def put_entry(xml, entry)
   # Chrome seems to have put a bunch of no user/pass logins in my DB, which are quite
   # useless, so we just ignore them and return back to the next row.
   return if entry['username_value'] == '' && entry['password_value'] = ''
@@ -60,16 +50,18 @@ def put_entry(entry)
   datestring = Time.now.strftime('%Y-%m-%dT%H:%M:%S')
 
   # The 'meat' of the entry
-  puts "<entry>\n<title>" + get_title(entry) + "</title>\n"
-  puts "<username>" + CGI.escapeHTML(entry['username_value']) + "</username>\n"
-  puts "<password>" + CGI.escapeHTML(entry['password_value']) + "</password>\n"
-  puts "<url>" + CGI.escapeHTML(entry['origin_url']) + "</url>\n"
-  puts "<comment></comment><icon>1</icon>"
-  puts "<creation>" + datestring + "</creation>\n"
-  puts "<lastaccess>" + datestring + "</lastaccess>\n"
-  puts "<lastmod>" + datestring + "</lastmod>\n"
-  puts "<expire>Never</expire>\n"
-  puts "</entry>\n"
+  xml.entry {
+    xml.title get_title(entry)
+    xml.username CGI.escapeHTML(entry['username_value'])
+    xml.password CGI.escapeHTML(entry['password_value'])
+    xml.url CGI.escapeHTML(entry['origin_url'])
+    xml.comment ""
+    xml.icon "1"
+    xml.creation datestring
+    xml.lastaccess datestring
+    xml.lastmod datestring
+    xml.expire "Never"
+  }
 end
 
 def getoptions(args)
@@ -142,11 +134,15 @@ else
     print "Database is locked or the location was invalid\n"
     exit
   end
-  # Print out the XML for importation
-  put_top
-  # Cycle through each entry and print it out
-  rows.each do |row|
-    put_entry(row)
-  end
-  put_bottom
+
+  xml = Builder::XmlMarkup.new(:target => $stdout, :indent => 2)
+  xml.declare! :DOCTYPE, :KEEPASSX_DATABASE
+
+  xml.database {
+    rows.each do |entry|
+      # Cycle through each entry and print it out
+      put_entry(xml, entry)
+    end
+  }
+
 end
