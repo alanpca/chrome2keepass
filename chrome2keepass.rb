@@ -113,7 +113,7 @@ options = values['options']
 
 if options.show_help
   # If we get sent the help options, show help and exit
-  print values['usage']
+  puts values['usage']
   exit
 end
 
@@ -122,6 +122,22 @@ if values['others'].size > 0
   print "Bad arguments: "
   values['others'].each { |badopt| print badopt }
 else
+
+  output = $stdout
+  if options.filename != nil?
+    if !File.exist?(options.filename)
+      begin
+        output = File.new(options.filename, 'w')
+      rescue Errno::EACCES
+        puts "ERROR: Couldn't open file '" + options.filename + "'" 
+        exit
+      end
+    else
+      puts "ERROR: File '" + options.filename + "' already exists."
+      exit
+    end
+  end
+
   # Set the location of the DB based on options sent by user
   sqdb = options.location + "/" + options.profile + "/Login Data"
   db = SQLite3::Database.new(sqdb)
@@ -131,11 +147,11 @@ else
     rows = db.execute("SELECT * FROM `logins`")
   # Leave on SQLException
   rescue SQLite3::SQLException
-    print "Database is locked or the location was invalid\n"
+    puts "Database is locked or the location was invalid"
     exit
   end
 
-  xml = Builder::XmlMarkup.new(:target => $stdout, :indent => 2)
+  xml = Builder::XmlMarkup.new(:target => output, :indent => 2)
   xml.declare! :DOCTYPE, :KEEPASSX_DATABASE
 
   xml.database {
