@@ -29,11 +29,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 =end
 
-require 'optparse'
-require 'ostruct'
-require 'sqlite3'
-require 'cgi'
-require 'builder'
+begin
+  require 'optparse'
+  require 'ostruct'
+  require 'sqlite3'
+  require 'cgi'
+  require 'builder'
+rescue LoadError => e
+  puts "You don't have a required gem: " + e.message.split[-1]
+  exit
+end
 
 def get_title(entry)
   # This is here for future support of renaming
@@ -84,6 +89,11 @@ def getoptions(args)
         options.location = location
     end
 
+    opts.on("-e", "--exact [LOCATION]", "Exact path to Chrome password database",
+      "Typically used with backup copy") do |filename|
+      options.exactfile = filename
+    end
+
     opts.on("-f", "--filename [FILENAME]", "Filename to use instead of STDOUT") do |filename|
       options.filename = filename
     end
@@ -121,10 +131,11 @@ if values['others'].size > 0
   # We got some bad arguments, let the user know
   print "Bad arguments: "
   values['others'].each { |badopt| print badopt }
+  exit
 else
 
   output = $stdout
-  if options.filename != nil?
+  if !options.filename.nil?
     if !File.exist?(options.filename)
       begin
         output = File.new(options.filename, 'w')
@@ -139,15 +150,28 @@ else
   end
 
   # Set the location of the DB based on options sent by user
-  sqdb = options.location + "/" + options.profile + "/Login Data"
+  if options.exactfile.nil?
+    sqdb = options.location + "/" + options.profile + "/Login Data"
+  else
+    sqdb = options.exactfile
+  end
+
+  if !File.exist?(sqdb)
+    puts "Cannot open the database at location: " + sqdb
+    exit
+  end
+
   db = SQLite3::Database.new(sqdb)
   # Give the results as a hash
   db.results_as_hash = true
   begin
     rows = db.execute("SELECT * FROM `logins`")
-  # Leave on SQLException
+  # Leave on Exception
   rescue SQLite3::SQLException
-    puts "Database is locked or the location was invalid"
+    puts "There is a problem with your Chrome password database"
+    exit
+  rescue SQLite3::BusyException
+    puts "The Chrome database has been locked, please exit Chrome and try again"
     exit
   end
 
@@ -155,10 +179,14 @@ else
   xml.declare! :DOCTYPE, :KEEPASSX_DATABASE
 
   xml.database {
-    rows.each do |entry|
-      # Cycle through each entry and print it out
-      put_entry(xml, entry)
-    end
+    xml.group {
+      xml.title "chrome2keepass"
+      xml.icon "1"
+      rows.each do |entry|
+        # Cycle through each entry and print it out
+        put_entry(xml, entry)
+      end
+    }
   }
 
 end

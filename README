@@ -1,5 +1,6 @@
 chrome2keepass will take a Chrome password database and convert it to proper
-XML format importation into Keepass (http://keepass.info/download.html).
+XML format which can be imported into Keepass 
+(http://keepass.info/download.html).
 
 If you're like me, then you sometimes want to access sites from a remote
 computer, but have a massive amount of different passwords that are
@@ -22,11 +23,13 @@ Usage: chrome2keepass [options]
                                      Default: 'Default'
     -l, --location [LOCATION]        Location to chrome config
                                      Default: '$HOME/.config/chromium'
+    -e, --exact [LOCATION]           Exact path to Chrome password database
+                                     Typically used with backup copy
     -f, --filename [FILENAME]        Filename to use instead of STDOUT
     -h, --help                       Show this help
 
-WARNING: This will dump your passwords to your screen, plaintext.  Don't
-run this when there are prying eyes around. The output is meant to be redirected
-to a file that you can import into Keepassx.
+WARNING: This will dump your passwords to your screen, plaintext if you don't
+use the -f option.  Don't run this when there are prying eyes around. If there
+are others around, dump it to a file using -f.
 
 Copyright (C) 2011 Alan P. Laudicina <contact@alanp.ca>
